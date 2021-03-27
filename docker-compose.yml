@@ -1,0 +1,113 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    network_mode: my-net
+    ports:
+      - 6379:6379
+    volumes:
+      - ~/docker/data/redis:/data
+      - ~/docker/conf/redis:/usr/local/etc/redis
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    network_mode: my-net
+    ports:
+      - 3306:3306
+    volumes:
+      - ~/docker/data/mysql:/var/lib/mysql
+      - ~/docker/conf/mysql:/etc/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=cao19981128
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    network_mode: my-net
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=yu 
+      - MONGO_INITDB_ROOT_PASSWORD=cao19981128
+    volumes:
+      - ~/docker/data/mongo:/data/db
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    network_mode: my-net
+    ports:
+      - 8848:8848
+    volumes:
+      - ~/docker/conf/nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - nacos1
+      - nacos2
+      - nacos3
+  nacos1:
+    image: nacos/nacos-server:latest
+    container_name: nacos1
+    network_mode: my-net
+    environment:
+      - PREFER_HOST_MODE=hostname
+      - NACOS_SERVERS=nacos1:8848 nacos2:8848 nacos3:8848
+      - MYSQL_SERVICE_HOST=mysql
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_DB_NAME=nacos
+      - MYSQL_SERVICE_USER=nacos
+      - MYSQL_SERVICE_PASSWORD=nacos
+      - JVM_XMS=480M 
+      - JVM_XMX=480M 
+      - JVM_XMN=240M
+    volumes:
+      - ~/docker/conf/nacos/custom.properties:/home/nacos/init.d/custom.properties
+    restart: always
+    depends_on:
+      - mysql
+
+  nacos2:
+    image: nacos/nacos-server:latest
+    container_name: nacos2
+    network_mode: my-net
+    environment:
+      - PREFER_HOST_MODE=hostname
+      - NACOS_SERVERS=nacos1:8848 nacos2:8848 nacos3:8848
+      - MYSQL_SERVICE_HOST=mysql
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_DB_NAME=nacos
+      - MYSQL_SERVICE_USER=nacos
+      - MYSQL_SERVICE_PASSWORD=nacos
+      - JVM_XMS=480M 
+      - JVM_XMX=480M 
+      - JVM_XMN=240M
+    volumes:
+      - ~/docker/conf/nacos/custom.properties:/home/nacos/init.d/custom.properties
+    restart: always
+    depends_on:
+        - mysql
+    
+  nacos3:
+    image: nacos/nacos-server:latest
+    container_name: nacos3
+    network_mode: my-net
+    environment:
+      - PREFER_HOST_MODE=hostname
+      - NACOS_SERVERS=nacos1:8848 nacos2:8848 nacos3:8848
+      - MYSQL_SERVICE_HOST=mysql
+      - MYSQL_SERVICE_PORT=3306
+      - MYSQL_SERVICE_DB_NAME=nacos
+      - MYSQL_SERVICE_USER=nacos
+      - MYSQL_SERVICE_PASSWORD=nacos
+      - JVM_XMS=480M 
+      - JVM_XMX=480M 
+      - JVM_XMN=240M
+    volumes:
+      - ~/docker/conf/nacos/custom.properties:/home/nacos/init.d/custom.properties
+    restart: always
+    depends_on:
+      - mysql
+
